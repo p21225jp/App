@@ -22,29 +22,51 @@
 				<i class="icon-keyboard_arrow_right"></i>
 			</div>
 		</div>
-		<div class="bulletin" @click="showDetali">
+		<div class="bulletin-warpper" @click="showDetali">
 			   <span class="pic"></span><span class="text">{{ seller.bulletin }}</span><i class="icon-keyboard_arrow_right"></i>
 		</div>
 		<div class="background">
 			<img :src="seller.avatar" alt="" width="100%" height="100%">
 		</div>
-		<div v-show="detailShow" class="detail">
-			<div class="detail-wrapper clearfix">
-				<div class="detail-main">
-					<h1 class="name">{{ seller.name }}</h1>
-					<div class="rating">
-						<span class="rating-stars"></span>
+		<transition name="fade">
+			<div v-show="detailShow" class="detail">
+				<div class="detail-wrapper clearfix">
+					<div class="detail-main">
+						<h1 class="name">{{ seller.name }}</h1>
+						<div class="star-wrapper">
+							<star :size="48" :score="seller.score"></star>
+						</div>
+						<div class="title">
+							<div class="line"></div>
+							<div class="test">优惠信息</div>
+							<div class="line"></div>
+						</div>
+						<ul v-if="seller.supports" class="supports">
+							<li v-for="(support,index) in seller.supports" class="support-item" :key="index">
+								<span class="icon" :class="classMap[support.type]"></span>
+								<span class="description">{{support.description}}</span>
+							</li>
+						</ul>
+						<div class="title">
+							<div class="line"></div>
+							<div class="test">商家公告</div>
+							<div class="line"></div>
+						</div>
+						<div class="bulletin">
+							<p class="content"> {{ seller.bulletin }}</p>
+						</div>
 					</div>
 				</div>
+				<div class="detail-close">
+					<i class="icon-close" @click="closeDetail"></i>
+				</div>
 			</div>
-			<div class="detail-close">
-				<i class="icon-close" @click="closeDetail"></i>
-			</div>
-		</div>
+		</transition>
 	</div>
 </template>
 
 <script>
+import Star from "@/components/star/star"
 const ERR_OK = 0
 export default {
 	data: function () {
@@ -53,8 +75,11 @@ export default {
 			detailShow: false
 		}
 	},
+	components: {
+		Star
+	},
 	created() {
-		this.classMap = ['decrease','discount','guarantee','invoice','special']
+		this.classMap = ['decrease','discount','special','invoice','guarantee']
 		this.$http.get('api/seller').then((response) => {
 			response = response.data
 			if (response.errno === ERR_OK) {
@@ -99,6 +124,13 @@ export default {
 		background-color: rgba(7,17,27,0.8);
 		backdrop-filter: blur(10px);
 		opacity: 1;
+		&.fade-enter-active, &.fade-leave-active {
+			transition: all 0.5s;
+		}
+		&.fade-enter, &.fade-leave-active {
+			opacity: 0;
+        	background: rgba(7, 17, 27, 0);
+		}
 		.detail-wrapper {
 			width: 100%;
 			min-height: 100%;
@@ -112,14 +144,70 @@ export default {
 					text-align: center;
 					margin-bottom: 16px;
 				}
-				.rating {
+				.star-wrapper {
+					text-align: center;
+					margin-bottom: 28px;
+				}
+				.title {
+					text-align: center;
 					display: flex;
-					width: 100%;
-					height: 24px;
-					.rating-stars {
-						flex:1;
-						text-align: center;
-
+					margin-bottom: 24px;
+					.line {
+						flex: 1;
+			            position: relative;
+			            top: -6px;
+			            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+					}
+					.test {
+						padding: 0 12px;
+              			font-size: 14px;
+              			font-weight: 700;
+					}
+				}
+				.supports {
+					padding: 0 12px;
+					margin-bottom: 28px;
+					.support-item {
+						margin-bottom: 12px;
+						font-size: 0;
+						.icon {
+							display: inline-block;
+							vertical-align: top;
+							width: 16px;
+							height: 16px;
+							margin-right: 6px;
+							background-size: 16px 16px;
+							background-repeat: no-repeat;
+							&.decrease {
+								@include bg-image('decrease_2');
+							}
+							&.discount {
+								@include bg-image('discount_2');
+							}
+							&.guarantee {
+								@include bg-image('guarantee_2');
+							}
+							&.invoice {
+								@include bg-image('invoice_2');
+							}
+							&.special {
+								@include bg-image('special_2');
+							}
+						}
+						.description {
+							font-size: 12px;
+							line-height: 16px;
+						}
+					}
+					&:last-child {
+						margin-bottom: 0;
+					}
+				}
+				.bulletin {
+					padding: 0 12px;
+					.content {
+						font-size: 12px;
+						line-height: 24px;
 					}
 				}
 			}
@@ -183,21 +271,21 @@ export default {
 					margin-right: 4px;
 					background-size: 12px 12px;
 					background-repeat: no-repeat;
-				}
-				& > .decrease {
-					@include bg-image('decrease_1');
-				}
-				& > .discount {
-					@include bg-image('discount_1');
-				}
-				& > .guarantee {
-					@include bg-image('guarantee_1');
-				}
-				& > .invoice {
-					@include bg-image('invoice_1');
-				}
-				& > .special {
-					@include bg-image('special_1');
+					&.decrease {
+						@include bg-image('decrease_1');
+					}
+					&.discount {
+						@include bg-image('discount_1');
+					}
+					&.guarantee {
+						@include bg-image('guarantee_1');
+					}
+					&.invoice {
+						@include bg-image('invoice_1');
+					}
+					&.special {
+						@include bg-image('special_1');
+					}
 				}
 				& > .description {
 					font-size: 10px;
@@ -226,7 +314,7 @@ export default {
 			}
 		}
 	}
-	.bulletin {
+	.bulletin-warpper {
 		height: 28px;
 		line-height: 28px;
 		padding: 0 22px 0 12px;
