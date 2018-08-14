@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <app-header></app-header>
+    <app-header :seller="seller"></app-header>
     <tab></tab>
     <router-view></router-view>
   </div>
@@ -9,11 +9,25 @@
 <script>
 import Header from "@/components/header/header"
 import Tab from "@/components/tab/tab"
+const ERR_OK = 0
 export default {
-  components: {
-    "app-header":Header,
-    Tab
-  }
+	data() {
+		return {
+			seller:{}
+		}
+	},
+	components: {
+		"app-header":Header,
+	    Tab
+	},
+	created() {
+		this.$http.get('api/seller').then((response) => {
+			response = response.data
+			if (response.errno === ERR_OK) {
+				this.seller = response.data
+			}
+		})
+	}
 }
 
 </script>
