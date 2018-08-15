@@ -1,28 +1,31 @@
 <template>
 	<div class="goods">
-		<div class="menu-wrapper">
+		<div class="menu-wrapper" ref="menuWrapper">
 			<ul class="menu">
 				<li v-for="(item,index) in goods" class="menu-item">
-					<span class="text">
+					<span class="text border-bottom">
 						<icon :size="3" :type="item.type" v-show="item.type>0"></icon>{{ item.name }}
 					</span>
 				</li>
 			</ul>
 		</div>
-		<div class="goods-wrapper">
+		<div class="goods-wrapper" ref="goodsWrapper">
 			<ul>
 				<li v-for="item in goods" class="goods-item">
-					<h1 class="title">{{ item.name }}</h1>
+					<h1 class="title border-left">{{ item.name }}</h1> 
 					<ul>
-						<li v-for="food in item.foods" class="food">
+						<li v-for="food in item.foods" class="food border-bottom">
 							<div class="food-img">
 								<img :src="food.icon">
 							</div>
 							<div class="food-content">
-								<div class="name">{{food.name}}</div>
-								<div class="description">{{food.description}}</div>
-								<div class="sell-count">
-									<span>月售{{food.sellCount}}</span><span>好评率{{food.rating}}%</span>
+								<h2 class="name">{{food.name}}</h2>
+								<p class="description" v-show="food.description !==''">{{food.description}}</p>
+								<div class="extra">
+									<span class="sell-count">月售{{food.sellCount}}</span><span class="rating">好评率{{food.rating}}%</span>
+								</div>
+								<div class="price-wrapper">
+									<span class="price">￥{{food.price}}</span><span class="old-price" v-show="food.oldPrice !==''">￥{{food.oldPrice}}</span>
 								</div>
 							</div>
 						</li>
@@ -35,6 +38,7 @@
 
 <script>
 import Icon from "@/components/icon/icon"
+import BScroll from 'better-scroll'
 const ERR_OK = 0
 export default {
 	data() {
@@ -55,13 +59,21 @@ export default {
 			response = response.data
 			if (response.errno === ERR_OK) {
 				this.goods = response.data
+				this._initScroll()
 			}
 		})
+	},
+	methods: {
+		_initScroll() {
+			this.menuScroll = new BScroll(this.$refs.menuWrapper,{})
+			this.goodsScroll = new BScroll(this.$refs.goodsWrapper,{})
+		}
 	}
 }
 </script>
 
 <style scoped lang="scss">
+@import "../../assets/scss/public";
 @import "../../assets/scss/mixin";
 .goods {
 	display: flex;
@@ -86,12 +98,89 @@ export default {
 				width: 56px;
 				vertical-align: middle;
 				font-size: 12px;
-				@include border-bottom(rgba(7,17,27,.1));
+				@include border-bottom(rgba(7,17,27,.1));	
 			}
+			/* &:last-child {
+				.text {
+					@include border-none;
+				}
+			} */
 		}
 	}
 	.goods-wrapper {
 		flex:1;
+		.title {
+			font-size: 12px;
+			color: rgb(147,153,159);
+			font-weight: normal/700;
+			line-height: 26px;
+			height: 26px;
+			padding-left: 14px;
+			background: #F3F5F7;
+			@include border-left(#d9dde1);
+		}
+		.food {
+			display: flex;
+			margin: 18px;
+			padding-bottom: 18px;
+			@include border-bottom(rgba(7,17,27,.1));
+			&:last-child {
+				@include border-none;
+				margin-bottom: 0;
+			}
+			.food-img {
+				flex:0 0 57px;
+				margin-right: 10px;
+				vertical-align: top;
+				img {
+					width: 57px;
+					height: 57px;
+					border-radius: 2px;
+				}
+			}
+			.food-content {
+				flex:1;
+				.name {
+					font-size: 14px;
+					color: rgb(7,17,27);
+					line-height: 14px;
+					margin: 2px 0 8px 0;
+				}
+				.description,.extra {
+					color: rgb(147,153,159);
+				}
+				.description {
+					font-size: 10px;
+					margin-bottom: 8px;
+					line-height: 12px;
+				}
+				.extra{
+					line-height: 10px;
+					.sell-count {
+						font-size: 10px;
+						margin-right: 12px;
+					}
+					.rating {
+						font-size: 10px;
+					}
+				}
+				.price-wrapper {
+					line-height: 24px;
+					.price {
+						font-weight: 700;
+						font-size:14px;
+						margin-right: 8px;
+						color: rgb(240,20,20);
+					}
+					.old-price {
+						font-weight: 700;
+						text-decoration: line-through;
+						font-size: 10px;
+						color: rgb(147,153,159);
+					}
+				}
+			}
+		}
 	}
 }
 </style>
